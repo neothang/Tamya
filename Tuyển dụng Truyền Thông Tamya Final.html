@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Bài Kiểm Tra Tuyển Dụng Truyền Thông & Marketing Tamya</title>
+    <!-- Tích hợp Tailwind CSS để tạo giao diện -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Tùy chỉnh font chữ mượt mà hơn */
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            /* Hỗ trợ mượt cho cuộn trang trên iOS */
+            -webkit-overflow-scrolling: touch;
+            /* Loại bỏ viền tối mặc định khi click trên Safari */
+            -webkit-tap-highlight-color: transparent;
+        }
+        /* Đảm bảo cỡ chữ trên di động không bị tự động thu phóng khi chạm focus */
+        input, textarea, select {
+            font-size: 16px !important;
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-slate-50 text-gray-800 pb-12 selection:bg-emerald-200 selection:text-emerald-900 pr-[env(safe-area-inset-right)] pl-[env(safe-area-inset-left)]">
+
+    <!-- Custom Alert Modal (Thay thế alert trình duyệt vốn bị hạn chế trên một số app di động) -->
+    <div id="customAlert" class="fixed inset-0 z-[100] hidden items-center justify-center p-4 bg-black/50 backdrop-blur-sm transition-opacity duration-300">
+        <div class="bg-white rounded-2xl max-w-sm w-full p-6 text-center shadow-2xl border border-gray-100 transform transition-transform scale-95 duration-300">
+            <div class="w-12 h-12 bg-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <svg class="w-6 h-6 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+                </svg>
+            </div>
+            <h3 class="text-lg font-bold text-gray-800 mb-2" id="alertTitle">Thông báo</h3>
+            <p class="text-gray-600 text-sm mb-6" id="alertMessage">Nội dung</p>
+            <button id="closeAlertBtn" class="w-full bg-emerald-600 hover:bg-emerald-700 active:scale-95 text-white font-semibold py-3 px-4 rounded-xl transition shadow-md">
+                Đã hiểu
+            </button>
+        </div>
+    </div>
+
+    <!-- Success Screen (Màn hình sau khi nộp bài) -->
+    <div id="successScreen" class="hidden min-h-screen bg-gray-50 flex-col items-center justify-center p-4">
+        <div class="bg-white max-w-md w-full rounded-2xl shadow-xl p-6 sm:p-8 text-center border-t-8 border-emerald-600 transform transition-all scale-100">
+            <div class="w-16 h-16 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4 sm:mb-6">
+                <svg class="w-8 h-8 text-emerald-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"></path>
+                </svg>
+            </div>
+            <h2 class="text-xl sm:text-2xl font-bold text-gray-800 mb-2">Nộp bài thành công!</h2>
+            <p class="text-gray-600 mb-6 text-sm sm:text-base leading-relaxed">
+                Cảm ơn bạn <strong id="candidateNameDisplay" class="text-emerald-700">Ứng viên</strong> đã hoàn thành bài kiểm tra. 
+                <br/>Hội đồng tuyển dụng sẽ xem xét và liên hệ với bạn trong thời gian sớm nhất.
+            </p>
+            
+            <div class="bg-blue-50 border border-blue-100 p-4 rounded-xl mb-4 text-left text-xs sm:text-sm text-blue-800 space-y-2">
+                <div class="flex items-start gap-2">
+                    <svg class="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                    <span>Một file kết quả đã được tải xuống điện thoại của bạn tự động.</span>
+                </div>
+                <div class="flex items-start gap-2 border-t border-blue-200/50 pt-2">
+                    <svg class="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m-5 4h5m-5 4h5m-2 4h2"></path></svg>
+                    <span><strong>Mẹo di động:</strong> Nếu điện thoại của bạn chặn tự động tải file, hãy nhấn nút sao chép nhanh dưới đây để lưu bài làm.</span>
+                </div>
+            </div>
+
+            <!-- Nút Copy Dự Phòng Trên Điện Thoại -->
+            <button id="copyResultBtn" class="w-full mb-4 bg-blue-600 hover:bg-blue-700 active:scale-[0.98] text-white font-semibold py-3 px-6 rounded-xl transition duration-200 flex items-center justify-center gap-2 shadow-sm text-sm sm:text-base">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m-5 4h5m-5 4h5m-2 4h2"></path></svg>
+                <span>Sao chép toàn bộ bài làm</span>
+            </button>
+
+            <button onclick="window.location.reload()" class="w-full bg-emerald-600 hover:bg-emerald-700 active:scale-[0.98] text-white font-semibold py-3 px-6 rounded-xl transition duration-200 shadow-md">
+                Quay lại trang chủ
+            </button>
+        </div>
+    </div>
+
+    <!-- Main App Content (Nội dung chính của bài test) -->
+    <div id="mainApp">
+        <!-- Sticky Header with Timer -->
+        <header class="bg-white shadow-sm sticky top-0 z-50 border-b border-gray-200 pt-[env(safe-area-inset-top)]">
+            <div class="max-w-5xl mx-auto px-4 py-3 sm:py-4 flex justify-between items-center gap-3">
+                <div class="flex items-center gap-2 sm:gap-3">
+                    <div class="bg-emerald-600 p-2 rounded-xl shadow-sm">
+                        <svg class="w-5 h-5 sm:w-6 sm:h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                    </div>
+                    <div>
+                        <h1 class="text-base sm:text-lg font-bold text-gray-800 leading-tight">
+                            Bài Test Năng Lực Tamya
+                        </h1>
+                        <p class="text-[10px] sm:text-xs text-emerald-600 font-bold">TRUYỀN THÔNG & MARKETING</p>
+                    </div>
+                </div>
+                
+                <div class="flex items-center gap-2 bg-red-50 text-red-700 px-3 py-1.5 sm:px-5 sm:py-2 rounded-full font-mono font-bold text-base sm:text-lg border border-red-100 shadow-sm transition-all duration-300" id="timerContainer">
+                    <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                    </svg>
+                    <span id="timerDisplay">90:00</span>
+                </div>
+            </div>
+        </header>
+
+        <main class="max-w-4xl mx-auto px-3 sm:px-6 mt-6 sm:mt-8 space-y-6 sm:space-y-8">
+            <form id="testForm" class="space-y-6 sm:space-y-8">
+                
+                <!-- Candidate Info Section -->
+                <section class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div class="bg-emerald-600 px-5 py-4">
+                        <h2 class="text-lg font-bold text-white flex items-center gap-2">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                            </svg>
+                            Thông Tin Ứng Viên
+                        </h2>
+                    </div>
+                    <div class="p-5 grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1.5">Họ và tên ứng viên <span class="text-red-500">*</span></label>
+                            <input 
+                                type="text" 
+                                name="candidateName"
+                                required
+                                class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition bg-gray-50 focus:bg-white text-base text-gray-800"
+                                placeholder="Nhập họ và tên của bạn"
+                            />
+                        </div>
+                        <div>
+                            <label class="block text-sm font-semibold text-gray-700 mb-1.5">Ngày kiểm tra</label>
+                            <div class="relative">
+                                <svg class="w-5 h-5 absolute left-4 top-3.5 text-gray-400 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                                </svg>
+                                <input 
+                                    type="date" 
+                                    name="testDate"
+                                    value="2026-05-26"
+                                    class="w-full pl-11 pr-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition bg-gray-50 text-base text-gray-700"
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Part I: Marketing Knowledge -->
+                <section class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 sm:p-8 relative overflow-hidden transition-shadow">
+                    <div class="absolute top-0 left-0 w-1.5 h-full bg-blue-500"></div>
+                    <div class="flex items-start gap-3 mb-6">
+                        <div class="bg-blue-100 p-2 rounded-full text-blue-600 flex-shrink-0 mt-0.5">
+                            <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h2 class="text-lg sm:text-2xl font-bold text-gray-800 leading-tight">PHẦN I: Kiến Thức và Tư Duy Marketing</h2>
+                            <span class="inline-block mt-1 text-xs text-blue-700 bg-blue-100 px-2 py-0.5 rounded-full font-medium">15 Phút</span>
+                        </div>
+                    </div>
+
+                    <div class="space-y-6 sm:space-y-8">
+                        <!-- Question 1 -->
+                        <div class="bg-gray-50 p-4 sm:p-6 rounded-xl border border-gray-100">
+                            <p class="font-semibold text-gray-800 mb-3 text-base">Câu 1: Khách hàng hiện nay thường bị thu hút bởi yếu tố nào nhất?</p>
+                            <div class="space-y-2">
+                                <label class="flex items-center gap-3 p-3.5 rounded-xl border border-gray-200 cursor-pointer transition-all bg-white hover:border-blue-200 active:scale-[0.99] has-[:checked]:bg-blue-50 has-[:checked]:border-blue-500 shadow-sm min-h-[48px]">
+                                    <input type="radio" name="q1" value="A. Giá rẻ." class="w-5 h-5 text-blue-600 border-gray-300 focus:ring-blue-500 flex-shrink-0" />
+                                    <span class="text-sm sm:text-base text-gray-700 font-medium">A. Giá rẻ.</span>
+                                </label>
+                                <label class="flex items-center gap-3 p-3.5 rounded-xl border border-gray-200 cursor-pointer transition-all bg-white hover:border-blue-200 active:scale-[0.99] has-[:checked]:bg-blue-50 has-[:checked]:border-blue-500 shadow-sm min-h-[48px]">
+                                    <input type="radio" name="q1" value="B. Quảng cáo xuất hiện liên tục." class="w-5 h-5 text-blue-600 border-gray-300 focus:ring-blue-500 flex-shrink-0" />
+                                    <span class="text-sm sm:text-base text-gray-700 font-medium">B. Quảng cáo xuất hiện liên tục.</span>
+                                </label>
+                                <label class="flex items-center gap-3 p-3.5 rounded-xl border border-gray-200 cursor-pointer transition-all bg-white hover:border-blue-200 active:scale-[0.99] has-[:checked]:bg-blue-50 has-[:checked]:border-blue-500 shadow-sm min-h-[48px]">
+                                    <input type="radio" name="q1" value="C. Cảm xúc + Sự tin tưởng + Hình ảnh chuyên nghiệp." class="w-5 h-5 text-blue-600 border-gray-300 focus:ring-blue-500 flex-shrink-0" />
+                                    <span class="text-sm sm:text-base text-gray-700 font-medium">C. Cảm xúc + Sự tin tưởng + Hình ảnh chuyên nghiệp.</span>
+                                </label>
+                                <label class="flex items-center gap-3 p-3.5 rounded-xl border border-gray-200 cursor-pointer transition-all bg-white hover:border-blue-200 active:scale-[0.99] has-[:checked]:bg-blue-50 has-[:checked]:border-blue-500 shadow-sm min-h-[48px]">
+                                    <input type="radio" name="q1" value="D. Người nổi tiếng đại diện." class="w-5 h-5 text-blue-600 border-gray-300 focus:ring-blue-500 flex-shrink-0" />
+                                    <span class="text-sm sm:text-base text-gray-700 font-medium">D. Người nổi tiếng đại diện.</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Question 2 -->
+                        <div class="bg-gray-50 p-4 sm:p-6 rounded-xl border border-gray-100">
+                            <p class="font-semibold text-gray-800 mb-3 text-base">Câu 2: Một thương hiệu Spa/Mỹ phẩm cao cấp nên tránh điều gì sau đây?</p>
+                            <div class="space-y-2">
+                                <label class="flex items-center gap-3 p-3.5 rounded-xl border border-gray-200 cursor-pointer transition-all bg-white hover:border-blue-200 active:scale-[0.99] has-[:checked]:bg-blue-50 has-[:checked]:border-blue-500 shadow-sm min-h-[48px]">
+                                    <input type="radio" name="q2" value="A. Sử dụng màu sắc quá chói, lòe loẹt." class="w-5 h-5 text-blue-600 border-gray-300 focus:ring-blue-500 flex-shrink-0" />
+                                    <span class="text-sm sm:text-base text-gray-700 font-medium">A. Sử dụng màu sắc quá chói, lòe loẹt.</span>
+                                </label>
+                                <label class="flex items-center gap-3 p-3.5 rounded-xl border border-gray-200 cursor-pointer transition-all bg-white hover:border-blue-200 active:scale-[0.99] has-[:checked]:bg-blue-50 has-[:checked]:border-blue-500 shadow-sm min-h-[48px]">
+                                    <input type="radio" name="q2" value="B. Đăng nội dung bán hàng liên tục (hard-sell)." class="w-5 h-5 text-blue-600 border-gray-300 focus:ring-blue-500 flex-shrink-0" />
+                                    <span class="text-sm sm:text-base text-gray-700 font-medium">B. Đăng nội dung bán hàng liên tục (hard-sell).</span>
+                                </label>
+                                <label class="flex items-center gap-3 p-3.5 rounded-xl border border-gray-200 cursor-pointer transition-all bg-white hover:border-blue-200 active:scale-[0.99] has-[:checked]:bg-blue-50 has-[:checked]:border-blue-500 shadow-sm min-h-[48px]">
+                                    <input type="radio" name="q2" value="C. Hình ảnh thiếu sự đồng bộ và nhất quán." class="w-5 h-5 text-blue-600 border-gray-300 focus:ring-blue-500" />
+                                    <span class="text-sm sm:text-base text-gray-700 font-medium">C. Hình ảnh thiếu sự đồng bộ và nhất quán.</span>
+                                </label>
+                                <label class="flex items-center gap-3 p-3.5 rounded-xl border border-gray-200 cursor-pointer transition-all bg-white hover:border-blue-200 active:scale-[0.99] has-[:checked]:bg-blue-50 has-[:checked]:border-blue-500 shadow-sm min-h-[48px]">
+                                    <input type="radio" name="q2" value="D. Tất cả các đáp án trên." class="w-5 h-5 text-blue-600 border-gray-300 focus:ring-blue-500" />
+                                    <span class="text-sm sm:text-base text-gray-700 font-medium">D. Tất cả các đáp án trên.</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Question 3 -->
+                        <div>
+                            <p class="font-semibold text-gray-800 mb-2.5 text-base"><span class="text-blue-600">Câu 3 (Tự luận):</span> Bạn hiểu thế nào là “Insight khách hàng”? Hãy giải thích bằng ví dụ thực tế.</p>
+                            <textarea 
+                                name="q3"
+                                rows="4" 
+                                class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition resize-y bg-gray-50 focus:bg-white text-base leading-relaxed"
+                                placeholder="Nhập câu trả lời của bạn..."
+                            ></textarea>
+                        </div>
+
+                        <!-- Question 4 -->
+                        <div>
+                            <p class="font-semibold text-gray-800 mb-2.5 text-base"><span class="text-blue-600">Câu 4 (Tự luận):</span> Hãy nêu ít nhất 3 yếu tố giúp một Fanpage tăng tương tác tự nhiên.</p>
+                            <textarea 
+                                name="q4"
+                                rows="4" 
+                                class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition resize-y bg-gray-50 focus:bg-white text-base leading-relaxed"
+                                placeholder="1. ...&#10;2. ...&#10;3. ..."
+                            ></textarea>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Part II: Content Writing -->
+                <section class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 sm:p-8 relative overflow-hidden transition-shadow">
+                    <div class="absolute top-0 left-0 w-1.5 h-full bg-purple-500"></div>
+                    <div class="flex items-start gap-3 mb-6">
+                        <div class="bg-purple-100 p-2 rounded-full text-purple-600 flex-shrink-0 mt-0.5">
+                            <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h2 class="text-lg sm:text-2xl font-bold text-gray-800 leading-tight">PHẦN II: Bài Test Viết Content</h2>
+                            <span class="inline-block mt-1 text-xs text-purple-700 bg-purple-100 px-2 py-0.5 rounded-full font-medium">25 Phút</span>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-purple-50 border border-purple-100 rounded-xl p-4 sm:p-5 mb-6 shadow-sm text-sm sm:text-base leading-relaxed">
+                        <p class="text-gray-800">
+                            <strong class="text-purple-700">Đề bài:</strong> Công ty chuẩn bị ra mắt sản phẩm <span class="text-purple-800 font-bold bg-purple-200 px-2 py-0.5 rounded mx-1 shadow-sm">Kem bảo vệ da nâng tone tự nhiên</span> dành cho phân khúc Spa chuyên nghiệp. Bạn hãy thực hiện các yêu cầu sau:
+                        </p>
+                        <p class="text-xs text-gray-500 mt-2 font-medium">Tiêu chí: Đúng insight, ngôn ngữ tự nhiên, không lạm dụng AI.</p>
+                    </div>
+
+                    <div class="space-y-5">
+                        <div>
+                            <label class="block font-semibold text-gray-800 mb-1.5 text-sm sm:text-base">1. Viết 01 tiêu đề (Headline) ngắn gọn, hấp dẫn:</label>
+                            <input 
+                                type="text" 
+                                name="contentHeadline"
+                                class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none transition font-bold text-base text-gray-800 bg-gray-50 focus:bg-white"
+                                placeholder="[Nhập tiêu đề của bạn]"
+                            />
+                        </div>
+                        <div>
+                            <label class="block font-semibold text-gray-800 mb-1.5 text-sm sm:text-base">2. Viết 01 nội dung (Caption) Facebook hoàn chỉnh:</label>
+                            <textarea 
+                                name="contentCaption"
+                                rows="6" 
+                                class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none transition resize-y bg-gray-50 focus:bg-white text-base leading-relaxed"
+                                placeholder="Viết nội dung bài đăng tại đây..."
+                            ></textarea>
+                        </div>
+                        <div>
+                            <label class="block font-semibold text-gray-800 mb-1.5 text-sm sm:text-base">3. Viết 01 lời kêu gọi hành động (CTA) cuối bài:</label>
+                            <input 
+                                type="text" 
+                                name="contentCTA"
+                                class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none transition italic bg-gray-50 focus:bg-white text-base text-gray-700"
+                                placeholder="Ví dụ: Inbox ngay để nhận ưu đãi..."
+                            />
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Part III: Situational Handling -->
+                <section class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 sm:p-8 relative overflow-hidden transition-shadow">
+                    <div class="absolute top-0 left-0 w-1.5 h-full bg-orange-500"></div>
+                    <div class="flex items-start gap-3 mb-6">
+                        <div class="bg-orange-100 p-2 rounded-full text-orange-600 flex-shrink-0 mt-0.5">
+                            <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 8h2a2 2 0 012 2v6a2 2 0 01-2 2h-2v4l-4-4H9a1.994 1.994 0 01-1.414-.586m0 0L11 14h4a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2v4l.586-.586z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h2 class="text-lg sm:text-2xl font-bold text-gray-800 leading-tight">PHẦN III: Tình Huống Thực Tế</h2>
+                            <span class="inline-block mt-1 text-xs text-orange-700 bg-orange-100 px-2 py-0.5 rounded-full font-medium">15 Phút</span>
+                        </div>
+                    </div>
+
+                    <div class="space-y-6">
+                        <div>
+                            <div class="bg-orange-50 border-l-4 border-orange-500 p-4 mb-3 rounded-r-xl">
+                                <p class="text-sm sm:text-base text-gray-800"><strong class="text-orange-700">Tình huống 1:</strong> Khách hàng bình luận: <em>“Sản phẩm này mắc quá”</em>.</p>
+                                <p class="text-xs text-gray-500 mt-1">Yêu cầu: Viết câu trả lời lịch sự, định vị thương hiệu cao cấp.</p>
+                            </div>
+                            <textarea 
+                                name="sit1"
+                                rows="3" 
+                                class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition resize-y bg-gray-50 focus:bg-white text-base leading-relaxed"
+                                placeholder="Phản hồi của bạn với khách hàng..."
+                            ></textarea>
+                        </div>
+
+                        <div>
+                            <div class="bg-orange-50 border-l-4 border-orange-500 p-4 mb-3 rounded-r-xl">
+                                <p class="text-sm sm:text-base text-gray-800"><strong class="text-orange-700">Tình huống 2:</strong> Sếp yêu cầu: <em>“Làm thương hiệu sang hơn nhưng vẫn gần gũi”</em>.</p>
+                                <p class="text-xs text-gray-500 mt-1">Yêu cầu: Nêu cách triển khai qua hình ảnh và ngôn ngữ giao tiếp.</p>
+                            </div>
+                            <textarea 
+                                name="sit2"
+                                rows="3" 
+                                class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-orange-500 focus:border-orange-500 outline-none transition resize-y bg-gray-50 focus:bg-white text-base leading-relaxed"
+                                placeholder="Đưa ra hướng triển khai của bạn..."
+                            ></textarea>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Part IV: Brand & Design -->
+                <section class="bg-white rounded-2xl shadow-sm border border-gray-100 p-5 sm:p-8 relative overflow-hidden transition-shadow">
+                    <div class="absolute top-0 left-0 w-1.5 h-full bg-emerald-500"></div>
+                    <div class="flex items-start gap-3 mb-6">
+                        <div class="bg-emerald-100 p-2 rounded-full text-emerald-600 flex-shrink-0 mt-0.5">
+                            <svg class="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+                            </svg>
+                        </div>
+                        <div>
+                            <h2 class="text-lg sm:text-2xl font-bold text-gray-800 leading-tight">PHẦN IV: Thương Hiệu & Thiết Kế</h2>
+                            <span class="inline-block mt-1 text-xs text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded-full font-medium">35 Phút</span>
+                        </div>
+                    </div>
+
+                    <div class="space-y-6">
+                        <div>
+                            <h3 class="text-base sm:text-lg font-bold text-gray-800 mb-2">Câu 1: Bản sắc thương hiệu (Logo Tamya Xanh Lá)</h3>
+                            <p class="text-sm text-gray-600 mb-3">
+                                Định hướng: <strong>Chuyên nghiệp – Cao cấp – Chữa lành – Đáng tin</strong>. Đề xuất:
+                            </p>
+                            <textarea 
+                                name="brandIdentity"
+                                rows="4" 
+                                class="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 outline-none transition resize-y bg-gray-50 focus:bg-white text-base leading-relaxed"
+                                placeholder="- Phong cách hình ảnh sẽ sử dụng...&#10;- Kiểu nội dung chủ đạo..."
+                            ></textarea>
+                        </div>
+
+                        <div>
+                            <h3 class="text-base sm:text-lg font-bold text-gray-800 mb-2">Câu 2: Thực hành thiết kế Canva/Figma</h3>
+                            <div class="bg-emerald-50 border border-emerald-100 rounded-xl p-4 mb-4 text-xs sm:text-sm">
+                                <p class="text-gray-800 font-medium">
+                                    Tạo 01 post Facebook theo thông điệp: 
+                                    <span class="block text-center text-emerald-800 font-bold my-2 text-base italic">“Chăm sóc da không chỉ để đẹp, mà để tự tin hơn mỗi ngày”</span>
+                                </p>
+                            </div>
+                            
+                            <div class="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center hover:bg-emerald-50 hover:border-emerald-400 transition-colors duration-200">
+                                <svg class="w-8 h-8 text-gray-400 mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path>
+                                </svg>
+                                <p class="text-sm font-semibold text-gray-700">Dán Link thiết kế của bạn</p>
+                                <p class="text-xs text-gray-400 mb-3">(Link Canva, Drive hoặc Figma mở chia sẻ)</p>
+                                <input 
+                                    type="url" 
+                                    name="designLink"
+                                    autocapitalize="none"
+                                    autocomplete="off"
+                                    class="w-full max-w-md mx-auto px-4 py-2.5 text-center rounded-lg border border-gray-300 focus:ring-2 focus:ring-emerald-500 outline-none text-base bg-white"
+                                    placeholder="https://canva.com/..."
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Submit Action -->
+                <div class="pt-6 pb-12 text-center px-4">
+                    <button 
+                        type="submit"
+                        class="w-full sm:w-auto bg-emerald-600 hover:bg-emerald-700 active:scale-[0.97] text-white font-bold py-4 px-12 rounded-full shadow-lg shadow-emerald-200 transition-all text-lg flex items-center justify-center gap-2 mx-auto"
+                    >
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+                        </svg>
+                        Nộp Bài Kiểm Tra
+                    </button>
+                    <p class="text-gray-400 text-xs mt-3">Vui lòng rà soát lại thông tin trước khi nộp.</p>
+                </div>
+
+            </form>
+        </main>
+    </div>
+
+    <!-- Script JavaScript để xử lý đếm ngược, form và lưu file di động -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Cài đặt thời gian: 90 phút (tính bằng giây)
+            let timeLeft = 90 * 60; 
+            const timerDisplay = document.getElementById('timerDisplay');
+            const timerContainer = document.getElementById('timerContainer');
+            let isSubmitted = false;
+            let resultDataTxt = ""; // Lưu trữ text kết quả dự phòng cho sao chép trên điện thoại
+
+            // HỘP THOẠI THÔNG BÁO TÙY CHỈNH (Thay cho alert() bị lỗi iframe di động)
+            const customAlert = document.getElementById('customAlert');
+            const alertTitle = document.getElementById('alertTitle');
+            const alertMessage = document.getElementById('alertMessage');
+            const closeAlertBtn = document.getElementById('closeAlertBtn');
+
+            function showAlert(title, message) {
+                alertTitle.textContent = title;
+                alertMessage.textContent = message;
+                customAlert.classList.remove('hidden');
+                customAlert.classList.add('flex');
+            }
+
+            closeAlertBtn.addEventListener('click', () => {
+                customAlert.classList.add('hidden');
+                customAlert.classList.remove('flex');
+            });
+
+            // Hàm định dạng hiển thị thời gian
+            const formatTime = (seconds) => {
+                const m = Math.floor(seconds / 60);
+                const s = seconds % 60;
+                return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+            };
+
+            // Chạy đồng hồ đếm ngược
+            const timerId = setInterval(() => {
+                if (timeLeft > 0 && !isSubmitted) {
+                    timeLeft--;
+                    timerDisplay.textContent = formatTime(timeLeft);
+                    
+                    // Cảnh báo khi còn dưới 10 phút (600 giây)
+                    if (timeLeft < 600) {
+                        timerContainer.classList.remove('bg-red-50', 'border-red-100');
+                        timerContainer.classList.add('bg-red-600', 'text-white', 'animate-pulse', 'border-red-600');
+                    }
+                } else if (timeLeft <= 0 && !isSubmitted) {
+                    clearInterval(timerId);
+                    showAlert('Hết giờ!', 'Đã hết thời gian làm bài, hệ thống sẽ tự động nộp bài.');
+                    // Tự động nộp bài khi hết giờ
+                    document.getElementById('testForm').dispatchEvent(new Event('submit'));
+                }
+            }, 1000);
+
+            // Xử lý nộp form và tạo file tải xuống
+            const testForm = document.getElementById('testForm');
+            const mainApp = document.getElementById('mainApp');
+            const successScreen = document.getElementById('successScreen');
+            const candidateNameDisplay = document.getElementById('candidateNameDisplay');
+            const copyResultBtn = document.getElementById('copyResultBtn');
+
+            testForm.addEventListener('submit', (e) => {
+                e.preventDefault(); // Ngăn form tải lại trang
+                isSubmitted = true;
+                
+                // Lấy toàn bộ dữ liệu từ form
+                const formData = new FormData(testForm);
+                const candidateName = formData.get('candidateName') || 'Chua_Cung_Cap_Ten';
+                const testDate = formData.get('testDate') || 'Không có';
+                
+                // Hiển thị tên ở màn hình thành công
+                candidateNameDisplay.textContent = candidateName !== 'Chua_Cung_Cap_Ten' ? candidateName : 'Ứng viên';
+
+                // ==========================================
+                // TẠO NỘI DUNG FILE ĐỂ LƯU KẾT QUẢ
+                // ==========================================
+                let fileContent = `KẾT QUẢ BÀI KIỂM TRA TUYỂN DỤNG\n`;
+                fileContent += `========================================================\n\n`;
+                
+                fileContent += `[THÔNG TIN ỨNG VIÊN]\n`;
+                fileContent += `- Họ và tên: ${candidateName}\n`;
+                fileContent += `- Ngày làm bài: ${testDate}\n\n`;
+                fileContent += `--------------------------------------------------------\n`;
+                
+                fileContent += `[PHẦN I: KIẾN THỨC VÀ TƯ DUY MARKETING]\n`;
+                fileContent += `Câu 1: Khách hàng hiện nay thường bị thu hút bởi yếu tố nào nhất?\n=> Đáp án: ${formData.get('q1') || 'Chưa trả lời'}\n\n`;
+                fileContent += `Câu 2: Một thương hiệu Spa/Mỹ phẩm cao cấp nên tránh điều gì sau đây?\n=> Đáp án: ${formData.get('q2') || 'Chưa trả lời'}\n\n`;
+                fileContent += `Câu 3: Bạn hiểu thế nào là “Insight khách hàng”?\n=> Trả lời:\n   ${(formData.get('q3') || 'Chưa trả lời').replace(/\n/g, '\n   ')}\n\n`;
+                fileContent += `Câu 4: Hãy nêu ít nhất 3 yếu tố giúp một Fanpage tăng tương tác tự nhiên.\n=> Trả lời:\n   ${(formData.get('q4') || 'Chưa trả lời').replace(/\n/g, '\n   ')}\n\n`;
+                fileContent += `--------------------------------------------------------\n`;
+
+                fileContent += `[PHẦN II: BÀI TEST VIẾT CONTENT]\n`;
+                fileContent += `1. Tiêu đề (Headline):\n=> ${formData.get('contentHeadline') || 'Chưa trả lời'}\n\n`;
+                fileContent += `2. Nội dung (Caption):\n=> ${(formData.get('contentCaption') || 'Chưa trả lời').replace(/\n/g, '\n   ')}\n\n`;
+                fileContent += `3. Lời kêu gọi hành động (CTA):\n=> ${formData.get('contentCTA') || 'Chưa trả lời'}\n\n`;
+                fileContent += `--------------------------------------------------------\n`;
+
+                fileContent += `[PHẦN III: TƯ DUY THỰC TẾ & XỬ LÝ TÌNH HUỐNG]\n`;
+                fileContent += `Tình huống 1: Khách hàng chê sản phẩm mắc.\n=> Phản hồi:\n   ${(formData.get('sit1') || 'Chưa trả lời').replace(/\n/g, '\n   ')}\n\n`;
+                fileContent += `Tình huống 2: Sếp yêu cầu sang trọng nhưng gần gũi.\n=> Triển khai:\n   ${(formData.get('sit2') || 'Chưa trả lời').replace(/\n/g, '\n   ')}\n\n`;
+                fileContent += `--------------------------------------------------------\n`;
+
+                fileContent += `[PHẦN IV: TƯ DUY THƯƠNG HIỆU & THIẾT KẾ]\n`;
+                fileContent += `Câu 1: Xây dựng bản sắc thương hiệu.\n=> Đề xuất:\n   ${(formData.get('brandIdentity') || 'Chưa trả lời').replace(/\n/g, '\n   ')}\n\n`;
+                fileContent += `Câu 2: Thực hành thiết kế nhanh Canva.\n=> Link bài thiết kế: ${formData.get('designLink') || 'Chưa có link'}\n\n`;
+                
+                fileContent += `========================================================\n`;
+                fileContent += `HẾT BÀI KIỂM TRA.`;
+
+                resultDataTxt = fileContent; // Lưu lại để phòng trường hợp ứng viên bấm Copy
+
+                // Tải xuống file (Tương thích tốt trên máy tính và một số thiết bị Android/iOS mới)
+                try {
+                    const blob = new Blob([fileContent], { type: 'text/plain;charset=utf-8' });
+                    const url = URL.createObjectURL(blob);
+                    const downloadLink = document.createElement('a');
+                    downloadLink.href = url;
+                    const safeFileName = candidateName.trim().replace(/\s+/g, '_');
+                    downloadLink.download = `KetQua_TestMarketing_${safeFileName}.txt`;
+                    document.body.appendChild(downloadLink);
+                    downloadLink.click();
+                    document.body.removeChild(downloadLink);
+                    URL.revokeObjectURL(url);
+                } catch (err) {
+                    console.log("Không thể tự động tải file trên thiết bị này, dùng phương án sao chép dự phòng.");
+                }
+
+                // Chuyển sang màn hình chúc mừng thành công mượt mà
+                mainApp.style.opacity = '0';
+                setTimeout(() => {
+                    mainApp.classList.add('hidden');
+                    successScreen.classList.remove('hidden');
+                    successScreen.classList.add('flex');
+                    mainApp.style.opacity = '1';
+                }, 300);
+            });
+
+            // Xử lý sao chép dự phòng khi bấm nút "Sao chép bài làm" (Dùng phương pháp tương thích iOS)
+            copyResultBtn.addEventListener('click', () => {
+                if (!resultDataTxt) return;
+                
+                // Giải pháp sao chép tương thích mọi hệ điều hành (kể cả trong iframe iOS)
+                const tempTextArea = document.createElement('textarea');
+                tempTextArea.value = resultDataTxt;
+                // Tránh bàn phím ảo hiển thị
+                tempTextArea.setAttribute('readonly', '');
+                tempTextArea.style.position = 'absolute';
+                tempTextArea.style.left = '-9999px';
+                document.body.appendChild(tempTextArea);
+                
+                // Chọn nội dung
+                tempTextArea.select();
+                tempTextArea.setSelectionRange(0, 99999); /* Cho di động */
+                
+                try {
+                    document.execCommand('copy');
+                    showAlert('Thành công!', 'Đã sao chép toàn bộ kết quả bài làm vào khay nhớ tạm (Clipboard). Bạn có thể dán (Paste) để lưu trữ.');
+                } catch (err) {
+                    showAlert('Thất bại', 'Vui lòng tự chọn và copy thủ công hoặc chụp ảnh màn hình.');
+                }
+                
+                document.body.removeChild(tempTextArea);
+            });
+        });
+    </script>
+</body>
+</html>
